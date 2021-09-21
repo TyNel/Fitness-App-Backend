@@ -1,4 +1,5 @@
-﻿using Fitness.Models.Requests;
+﻿using Fitness.Models.Domain;
+using Fitness.Models.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,10 @@ namespace Fitness.Services.Interfaces
         Task<User> GetById(int id);
 
         Task<int> AddUser(UserAddRequest user);
-     
-       
+
+        Task<User> Login(UserLogin user);
+
+
+
     }
 }

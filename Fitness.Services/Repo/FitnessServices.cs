@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Fitness.Models.Domain;
 using Fitness.Models.Requests;
 using Fitness.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -37,9 +38,9 @@ namespace Fitness.Services.Repo
 
             using (IDbConnection dbConnection = Connection)
             {
-               
 
-                var user = await Connection.QueryAsync<User>("[dbo].[GetFitUsersById]", new {id}, commandType: CommandType.StoredProcedure);
+
+                var user = await Connection.QueryAsync<User>("[dbo].[GetFitUsersById]", new { id }, commandType: CommandType.StoredProcedure);
 
                 _user = user.SingleOrDefault();
 
@@ -51,8 +52,8 @@ namespace Fitness.Services.Repo
 
         public async Task<int> AddUser(UserAddRequest user)
         {
-        
-            using (IDbConnection dbConnection = Connection )
+
+            using (IDbConnection dbConnection = Connection)
             {
                 var proc = "dbo.Fitness_SingleUser_Insert";
                 var parameter = new DynamicParameters();
@@ -70,10 +71,32 @@ namespace Fitness.Services.Repo
                 return newIdentity;
 
             };
-            }
-
         }
+
+
+        public async Task<User> Login(UserLogin user)
+        {
+            using (IDbConnection dbConnection = Connection)
+            {
+                var proc = "dbo.Fitness_Login";
+                var parameter = new DynamicParameters();
+
+                parameter.Add("@email", user.Email);
+                parameter.Add("@password", user.Password);
+
+                var responseUser = await Connection.QueryAsync<User>(proc, parameter, commandType: CommandType.StoredProcedure);
+
+                _user = responseUser.SingleOrDefault();
+
+                return _user;
+
+            };
+        }
+
+
     }
+}
+  
 
     
 
