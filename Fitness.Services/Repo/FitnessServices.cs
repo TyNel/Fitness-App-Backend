@@ -39,13 +39,25 @@ namespace Fitness.Services.Repo
             using (IDbConnection dbConnection = Connection)
             {
 
-
-                var user = await Connection.QueryAsync<User>("[dbo].[GetFitUsersById]", new { id }, commandType: CommandType.StoredProcedure);
+                var user = await Connection.QueryAsync<User>("[dbo].[Fitness_Select_User]", new { id }, commandType: CommandType.StoredProcedure);
 
                 _user = user.SingleOrDefault();
 
 
                 return _user;
+
+            }
+        }
+
+        public async Task<IEnumerable<Exercise>> GetExercises(int id)
+        {
+          
+            using (IDbConnection dbConnection = Connection)
+            {
+
+                var results = await Connection.QueryAsync<Exercise>("dbo.GetUserExById", new { id }, commandType: CommandType.StoredProcedure);
+
+                return results.ToList();
 
             }
         }

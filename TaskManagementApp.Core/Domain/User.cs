@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fitness.Models.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,5 +22,7 @@ namespace TaskManagementApp.Core.Entities
         public DateTime DateAdded { get; set; }
 
         public DateTime DateModified { get; set; }
+
+        public List<Exercise> Exercises { get; set; }
     }
 }

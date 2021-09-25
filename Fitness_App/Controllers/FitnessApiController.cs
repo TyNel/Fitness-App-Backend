@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace Fitness_App.Controllers
 {
     [Authorize]
-    [Route("api/fitness")]
+    [Route("api/fitness/")]
     [ApiController]
     public class FitnessApiController : ControllerBase
     {
@@ -35,15 +35,25 @@ namespace Fitness_App.Controllers
 
         }
 
+       
+        //[HttpGet("{id}")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<IActionResult> GetUserById(int id)
+        //{
+
+        //    return Ok(await _service.GetById(id));
+
+        //}
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetExercises(int id)
         {
 
-            return Ok(await _service.GetById(id));
+            return Ok(await _service.GetExercises(id));
 
         }
+
         [HttpPost]
         public async Task<IActionResult> AddUser(UserAddRequest user)
         {
@@ -61,7 +71,7 @@ namespace Fitness_App.Controllers
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenKey = Encoding.UTF8.GetBytes(_configuration.GetSection("JwtConfig:Secret").Value);
+            var tokenKey = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfig:Secret").Value);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

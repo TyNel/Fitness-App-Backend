@@ -13,6 +13,8 @@ namespace Fitness.Services.Interfaces
     {
         Task<User> GetById(int id);
 
+        Task<IEnumerable<Exercise>> GetExercises(int id);
+
         Task<int> AddUser(UserAddRequest user);
 
         Task<User> Login(UserLogin user);
