@@ -54,6 +54,15 @@ namespace Fitness_App.Controllers
 
         }
 
+        [HttpGet("{id}/{userDate}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetExerciseByDate(int id, DateTime userDate)
+        {
+        
+            return Ok(await _service.GetExerciseByDate(id, userDate));
+
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddUser(UserAddRequest user)
         {

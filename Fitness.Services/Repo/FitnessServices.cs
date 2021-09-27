@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,20 @@ namespace Fitness.Services.Repo
             {
 
                 var results = await Connection.QueryAsync<Exercise>("dbo.GetUserExById", new { id }, commandType: CommandType.StoredProcedure);
+
+                return results.ToList();
+
+            }
+        }
+
+        public async Task<IEnumerable<Exercise>> GetExerciseByDate(int id, DateTime userDate)
+        {
+            string date = userDate.ToString("yyyy-MM-dd");
+
+            using (IDbConnection dbConnection = Connection)
+            {
+
+                var results = await Connection.QueryAsync<Exercise>("FitnessGetByDateId", new { id, date }, commandType: CommandType.StoredProcedure);
 
                 return results.ToList();
 
