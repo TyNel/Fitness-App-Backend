@@ -23,6 +23,6 @@ namespace TaskManagementApp.Core.Entities
 
         public DateTime DateModified { get; set; }
 
-        public List<Exercise> Exercises { get; set; }
+  
     }
 }

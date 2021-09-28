@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fitness.Models.Domain
 {
-    public class Exercise
+    public class BaseExercise
     {
         public int UserId { get; set; }
         public string Exercise_Name { get; set; }
@@ -24,5 +24,7 @@ namespace Fitness.Models.Domain
         public DateTime DateAdded { get; set; }
 
         public DateTime DateModified { get; set; }
+
+    
     }
 }

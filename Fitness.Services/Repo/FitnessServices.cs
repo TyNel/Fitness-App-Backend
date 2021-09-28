@@ -50,27 +50,27 @@ namespace Fitness.Services.Repo
             }
         }
 
-        public async Task<IEnumerable<Exercise>> GetExercises(int id)
+        public async Task<IEnumerable<CompletedExercise>> GetExercises(int id)
         {
           
             using (IDbConnection dbConnection = Connection)
             {
 
-                var results = await Connection.QueryAsync<Exercise>("dbo.GetUserExById", new { id }, commandType: CommandType.StoredProcedure);
+                var results = await Connection.QueryAsync<CompletedExercise>("dbo.GetUserExById", new { id }, commandType: CommandType.StoredProcedure);
 
                 return results.ToList();
 
             }
         }
 
-        public async Task<IEnumerable<Exercise>> GetExerciseByDate(int id, DateTime userDate)
+        public async Task<IEnumerable<CompletedExercise>> GetExerciseByDate(int id, DateTime userDate)
         {
             string date = userDate.ToString("yyyy-MM-dd");
 
             using (IDbConnection dbConnection = Connection)
             {
 
-                var results = await Connection.QueryAsync<Exercise>("FitnessGetByDateId", new { id, date }, commandType: CommandType.StoredProcedure);
+                var results = await Connection.QueryAsync<CompletedExercise>("FitnessGetByDateId", new { id, date }, commandType: CommandType.StoredProcedure);
 
                 return results.ToList();
 

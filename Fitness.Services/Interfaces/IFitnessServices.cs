@@ -13,9 +13,9 @@ namespace Fitness.Services.Interfaces
     {
         Task<User> GetById(int id);
 
-        Task<IEnumerable<Exercise>> GetExercises(int id);
+        Task<IEnumerable<CompletedExercise>> GetExercises(int id);
 
-        Task<IEnumerable<Exercise>> GetExerciseByDate(int id, DateTime userDate);
+        Task<IEnumerable<CompletedExercise>> GetExerciseByDate(int id, DateTime userDate);
 
         Task<int> AddUser(UserAddRequest user);
 
