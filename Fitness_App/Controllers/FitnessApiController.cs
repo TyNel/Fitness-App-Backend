@@ -1,11 +1,14 @@
 ﻿using Fitness.Models.Domain;
 using Fitness.Models.Requests;
 using Fitness.Services.Interfaces;
+using Fitness.Services.Repo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,6 +26,8 @@ namespace Fitness_App.Controllers
     [ApiController]
     public class FitnessApiController : ControllerBase
     {
+        private static Logger logger = LogManager.GetLogger("*");
+
         private readonly IConfiguration _configuration;
         IFitnessServices _service = null;
 
@@ -35,15 +40,24 @@ namespace Fitness_App.Controllers
 
         }
 
-       
-        //[HttpGet("{id}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //public async Task<IActionResult> GetUserById(int id)
-        //{
 
-        //    return Ok(await _service.GetById(id));
+        [HttpGet("user/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserById(int id)
+        {
 
-        //}
+            return Ok(await _service.GetById(id));
+
+        }
+
+        [HttpGet("ExerciseType")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetExerciseType()
+        {
+
+            return Ok(await _service.GetExerciseType());
+
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -58,13 +72,13 @@ namespace Fitness_App.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExerciseByDate(int id, DateTime userDate)
         {
-        
+
             return Ok(await _service.GetExerciseByDate(id, userDate));
 
         }
-
+        [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> AddUser(UserAddRequest user)
+        public async Task<IActionResult> AddUser([FromBody] UserAddRequest user)
         {
             return Ok(await _service.AddUser(user));
         }
@@ -75,6 +89,11 @@ namespace Fitness_App.Controllers
             var LoginUser = await _service.Login(user);
 
             if (LoginUser == null)
+            {
+                return Unauthorized();
+            }
+
+            if (CommonMethods.Decrypt(LoginUser.Password) != user.Password)
             {
                 return Unauthorized();
             }
@@ -93,9 +112,33 @@ namespace Fitness_App.Controllers
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-           
+
 
             return Ok(new { token = tokenHandler.WriteToken(token), LoginUser });
         }
+        [AllowAnonymous]
+        [HttpPost("addExercise")]
+        public async Task<IActionResult> AddExercise(ExerciseAddRequest exercise)
+        {
+            return Ok(await _service.AddExercise(exercise));
+        }
+
+        [AllowAnonymous]
+        [HttpPut("UpdateUser")]
+        public async Task<IActionResult> UpdateUser(UpdateUser user)
+        {
+            return Ok(await _service.UpdateUser(user));
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteExercise(int id)
+        {
+
+            await _service.DeleteExercise(id);
+          
+            return Ok("Exercise Deleted");
+        }
     }
+    
 }
