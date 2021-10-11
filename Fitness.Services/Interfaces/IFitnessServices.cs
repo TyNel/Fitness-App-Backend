@@ -13,6 +13,8 @@ namespace Fitness.Services.Interfaces
     {
         Task<User> GetById(int id);
 
+        Task<User> GetByEmail(string email);
+
         Task<IEnumerable<CompletedExercise>> GetExercises(int id);
 
         Task<IEnumerable<CompletedExercise>> GetExerciseByDate(int id, DateTime userDate);
@@ -28,6 +30,10 @@ namespace Fitness.Services.Interfaces
         Task<UpdateUser> UpdateUser(UpdateUser user);
 
         Task DeleteExercise(int id);
+
+        Task<CompletedExercise> UpdateExercise(ExerciseUpdate exercise);
+
+        Task<CompletedExercise> GetExerciseById(int id);
 
 
 

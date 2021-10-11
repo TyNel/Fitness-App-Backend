@@ -19,8 +19,8 @@ namespace Fitness.Services.Repo
     {
         private readonly IConfiguration _configuration;
         User _user = new User();
-
         UpdateUser updated_user = new UpdateUser();
+        CompletedExercise complete_ex = new CompletedExercise();
 
         public FitnessServices(IConfiguration configuration)
         {
@@ -43,6 +43,23 @@ namespace Fitness.Services.Repo
             {
 
                 var user = await Connection.QueryAsync<User>("[dbo].[Fitness_Select_User]", new { id }, commandType: CommandType.StoredProcedure);
+
+                _user = user.SingleOrDefault();
+
+
+                return _user;
+
+            }
+        }
+
+        public async Task<User> GetByEmail(string email)
+        {
+            _user = new User();
+
+            using (IDbConnection dbConnection = Connection)
+            {
+
+                var user = await Connection.QueryAsync<User>("[dbo].[GetFitnessUserByEmail]", new { email }, commandType: CommandType.StoredProcedure);
 
                 _user = user.SingleOrDefault();
 
@@ -102,33 +119,7 @@ namespace Fitness.Services.Repo
             };
         }
 
-        //public async Task<int> Register(UserAddRequest user)
-        //{
-        //    using (IDbConnection dbConnection = Connection)
-        //    {
-        //        var proc = "dbo.Fitness_Users_Insert";
-        //        var parameter = new DynamicParameters();
 
-        //        var dt = new DataTable();
-
-        //        dt.Columns.Add("firstName");
-        //        dt.Columns.Add("lastName");
-        //        dt.Columns.Add("email");
-        //        dt.Columns.Add("password");
-
-        //        for (int i = 0; i < 5; i++)
-        //        {
-        //            dt.Rows.Add(user.FirstName + i, user.LastName + i, user.Email + i, user.Password + i);
-        //        }
-
-
-        //        await Connection.QueryAsync<int>(proc, dt, commandType: CommandType.StoredProcedure);
-
-        //        int newIdentity = .Output<int>("@userId");
-
-        //        return newIdentity;
-        //    }
-        //}
 
         public async Task<User> Login(UserLogin user)
         {
@@ -163,38 +154,6 @@ namespace Fitness.Services.Repo
 
             };
         }
-
-        //public async Task<int> AddExercise(ExerciseAddRequest exercise)
-        //{
-        //    using (IDbConnection dbConnection = Connection)
-        //    {
-        //        var proc = "dbo.Fitness_Exercise_Insert";
-
-        //        var dt = new DataTable();
-
-        //        dt.Columns.Add("userId");
-        //        dt.Columns.Add("exercise_name");
-        //        dt.Columns.Add("weight");
-        //        dt.Columns.Add("reps");
-        //        dt.Columns.Add("exercise_type");
-        //        dt.Columns.Add("status_id");
-        //        dt.Columns.Add("userNotes");
-        //        dt.Columns.Add("dateAdded");
-        //        dt.Columns.Add("dateModified");
-
-
-        //        for (int i = 0; i < 9; i++)
-        //        {
-        //            dt.Rows.Add(exercise.UserId + i, exercise.Exercise_Name + i, exercise.Weight + i, exercise.Reps + i, exercise.Exercise_Type + i, exercise.UserNotes + i, exercise.DateAdded + i, exercise.DateModified + i);
-        //        }
-
-
-
-        //        var result = await Connection.QueryAsync<int>(proc, new { exercise = dt.AsTableValuedParameter("dbo.Exercise_Insert_UDT") }, commandType: CommandType.StoredProcedure);
-
-        //        return result.FirstOrDefault();
-        //    }
-        //}
 
 
         public async Task<int> AddExercise(ExerciseAddRequest exercise)
@@ -268,7 +227,52 @@ namespace Fitness.Services.Repo
             };
         }
 
+        public async Task<CompletedExercise> UpdateExercise(ExerciseUpdate exercise)
+        {
+            complete_ex = new CompletedExercise();
+
+            using (IDbConnection dbConnection = Connection)
+            {
+                var proc = "dbo.Fitness_Exercise_Update";
+                var parameter = new DynamicParameters();
+
+                parameter.Add("@id", exercise.Id);
+                parameter.Add("@userId", exercise.UserId);
+                parameter.Add("@exercise_name", exercise.Exercise_Name);
+                parameter.Add("@weight", exercise.Weight);
+                parameter.Add("@reps", exercise.Reps);
+                parameter.Add("@exercise_type", exercise.Exercise_Type);
+                parameter.Add("@userNotes", exercise.UserNotes);
+                parameter.Add("@status_id", exercise.Status_Id);
+                
+
+                var response = await Connection.QueryAsync<CompletedExercise>(proc, parameter, commandType: CommandType.StoredProcedure);
+
+                complete_ex = response.SingleOrDefault();
+
+                return complete_ex;
+
+            }
+
+        }
+
+        public async Task<CompletedExercise> GetExerciseById(int id)
+        {
+            complete_ex = new CompletedExercise();
+
+            using (IDbConnection dbConnection = Connection)
+            {
+                var response = await Connection.QueryAsync<CompletedExercise>("[dbo].[GetUserExById]", new { id }, commandType: CommandType.StoredProcedure);
+
+                complete_ex = response.FirstOrDefault();
+
+                return complete_ex;
+            }
+
+        }
+
     }
+        
 
 }
   

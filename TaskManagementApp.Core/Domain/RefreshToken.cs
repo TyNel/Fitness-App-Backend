@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Fitness.Models.Domain
 {
-    public class ExerciseType
+    public class RefreshToken
     {
-        public int Type_Id { get; set; }
+        public string Token { get; set; }
 
-        public string Type { get; set; }
+        public int UserId { get; set; }
     }
 }

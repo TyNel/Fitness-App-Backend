@@ -1,4 +1,5 @@
 ﻿using Fitness.Models.Domain;
+using Fitness.Models.Domain.Responses;
 using Fitness.Models.Requests;
 using Fitness.Services.Interfaces;
 using Fitness.Services.Repo;
@@ -16,8 +17,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-
-
+using TaskManagementApp.Core.Entities;
 
 namespace Fitness_App.Controllers
 {
@@ -27,52 +27,85 @@ namespace Fitness_App.Controllers
     public class FitnessApiController : ControllerBase
     {
         private static Logger logger = LogManager.GetLogger("*");
-
         private readonly IConfiguration _configuration;
+        private readonly AccessTokenGenerator _tokenGenerator;
+        private readonly RefreshTokenGenerator _refreshTokenGenerator;
+        private readonly RefreshTokenValidator _refreshTokenValidator;
+        private readonly IRefreshTokenRepo _refreshTokenRepo;
         IFitnessServices _service = null;
 
-        public FitnessApiController(IConfiguration configuration, IFitnessServices service, IConfiguration config)
+
+        public FitnessApiController(IConfiguration configuration, IFitnessServices service, IConfiguration config, AccessTokenGenerator token, RefreshTokenGenerator refreshToken, RefreshTokenValidator refreshTokenValidator, IRefreshTokenRepo refreshTokenRepo)
         {
 
             _service = service;
 
             _configuration = config;
 
+            _tokenGenerator = token;
+
+            _refreshTokenGenerator = refreshToken;
+
+            _refreshTokenValidator = refreshTokenValidator;
+
+            _refreshTokenRepo = refreshTokenRepo;
+
         }
 
 
         [HttpGet("user/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserById(int id)
+    
+        public async Task<IActionResult> GetUserById([FromBody] int id)
         {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
+            if (await _service.GetById(id) == null)
+            {
+                return NotFound("User Not Found");
+            }
 
             return Ok(await _service.GetById(id));
 
         }
 
         [HttpGet("ExerciseType")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+  
         public async Task<IActionResult> GetExerciseType()
         {
-
+             
             return Ok(await _service.GetExerciseType());
 
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+   
         public async Task<IActionResult> GetExercises(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
+            if (await _service.GetExercises(id) == null)
+            {
+                return NotFound("Exercise Not Found");
+            }
 
             return Ok(await _service.GetExercises(id));
 
         }
 
         [HttpGet("{id}/{userDate}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExerciseByDate(int id, DateTime userDate)
         {
-
+            if(await _service.GetExerciseByDate(id, userDate) == null)
+            {
+                return NotFound("Exercise not found");
+            }
             return Ok(await _service.GetExerciseByDate(id, userDate));
 
         }
@@ -80,46 +113,73 @@ namespace Fitness_App.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] UserAddRequest user)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
+            if (user.Password != user.ConfirmPassword)
+
+            {
+                return BadRequest(new ErrorResponse("Password does not match confirm password."));
+            }
+
+            User existingEmail = await _service.GetByEmail(user.Email);
+
+            if (existingEmail != null)
+            {
+                return Conflict(new ErrorResponse("Email already exists"));
+            }
+
             return Ok(await _service.AddUser(user));
         }
+
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLogin user)
+        public async Task<IActionResult> Login([FromBody] UserLogin loginrequest)
         {
-            var LoginUser = await _service.Login(user);
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
 
-            if (LoginUser == null)
+            User user = await _service.GetByEmail(loginrequest.Email);
+
+            if (user == null)
             {
                 return Unauthorized();
             }
 
-            if (CommonMethods.Decrypt(LoginUser.Password) != user.Password)
+            var LoginUser = await _service.Login(loginrequest);
+
+            if (CommonMethods.Decrypt(LoginUser.Password) != loginrequest.Password)
             {
                 return Unauthorized();
             }
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenKey = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfig:Secret").Value);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            string accessToken = _tokenGenerator.GenerateToken(LoginUser);
+            string refreshToken = _refreshTokenGenerator.GenerateToken();
+
+            RefreshToken refreshTokenDTO = new RefreshToken()
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Email, user.Email)
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
-                SecurityAlgorithms.HmacSha256Signature)
+                Token = refreshToken,
+                UserId = LoginUser.UserId
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            await _refreshTokenRepo.Create(refreshTokenDTO);
 
 
-            return Ok(new { token = tokenHandler.WriteToken(token), LoginUser });
+            return Ok(new { accessToken, refreshToken, LoginUser });
         }
         [AllowAnonymous]
         [HttpPost("addExercise")]
-        public async Task<IActionResult> AddExercise(ExerciseAddRequest exercise)
+        public async Task<IActionResult> AddExercise([FromBody]ExerciseAddRequest exercise)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
             return Ok(await _service.AddExercise(exercise));
         }
 
@@ -131,14 +191,101 @@ namespace Fitness_App.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPut("UpdateExercise")]
+        public async Task<IActionResult> UpdateExercise([FromBody]ExerciseUpdate exercise)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
+            return Ok(await _service.UpdateExercise(exercise));
+        }
+
+        [AllowAnonymous]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteExercise(int id)
         {
+            if (await _service.GetExerciseById(id) == null)
+            {
+                return NotFound("User not found");
+            }
 
             await _service.DeleteExercise(id);
-          
+
             return Ok("Exercise Deleted");
         }
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequest refreshRequest)
+        {
+            if(!ModelState.IsValid)
+            {
+                return BadRequestModelState();
+            }
+
+            bool isValidRefreshToken = _refreshTokenValidator.Validate(refreshRequest.RefreshToken);
+
+            if(!isValidRefreshToken)
+            {
+                return BadRequest(new ErrorResponse("Invalid refresh token."));
+            }
+
+            RefreshToken refreshTokenDTO = await _refreshTokenRepo.GetByToken(refreshRequest.RefreshToken);
+
+            if(refreshTokenDTO == null)
+            {
+                return NotFound(new ErrorResponse("Invalid refresh token."));
+            }
+
+            await _refreshTokenRepo.Delete(refreshTokenDTO.UserId);
+
+
+            User user = await _service.GetById(refreshTokenDTO.UserId);
+
+            if(user == null)
+            {
+                return NotFound(new ErrorResponse("User Not Found"));
+            }
+
+            string accessToken = _tokenGenerator.GenerateToken(user);
+            string refreshToken = _refreshTokenGenerator.GenerateToken();
+
+     
+            await _refreshTokenRepo.Create(refreshTokenDTO);
+
+
+            return Ok(new { accessToken, refreshToken });
+        }
+
+       
+        [HttpDelete("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            string rawId = HttpContext.User.FindFirstValue("id");
+
+            if (!int.TryParse(rawId, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            await _refreshTokenRepo.DeleteAll(userId);
+
+
+            return NoContent();
+
+        }
+
+        private IActionResult BadRequestModelState()
+        {
+            IEnumerable<string> errorMessages = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));
+
+            return BadRequest(new ErrorResponse(errorMessages));
+        }
+
+
     }
+
+
     
 }

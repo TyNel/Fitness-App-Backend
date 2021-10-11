@@ -1,3 +1,4 @@
+using Fitness.Models.Domain;
 using Fitness.Services;
 using Fitness.Services.Interfaces;
 using Fitness.Services.Repo;
@@ -25,9 +26,10 @@ namespace Fitness_App
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -35,30 +37,36 @@ namespace Fitness_App
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
+            services.AddSingleton<AccessTokenGenerator>();
+            services.AddSingleton<TokenGenerator>();
+            services.AddSingleton<RefreshTokenGenerator>();
+            services.AddSingleton<RefreshTokenValidator>();
+            services.AddSingleton<IRefreshTokenRepo, InMemoryRefreshTokenRepo>();
             services.AddInfrastructure();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fitness_App", Version = "v1" });
             });
+            AuthenticationConfiguration authenticationConfiguration = new AuthenticationConfiguration();
+            _configuration.Bind("Authentication", authenticationConfiguration);
 
-            services.AddAuthentication(x =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x => 
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
+                o.TokenValidationParameters = new TokenValidationParameters()
                 {
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationConfiguration.TokenSecret)),
+                    ValidIssuer = authenticationConfiguration.Issuer,
+                    ValidAudience = authenticationConfiguration.Audience,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("JwtConfig:Secret").Value)),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateIssuer = true,
+                    ValidateAudience = true
+
                 };
             });
+
+      
+            services.AddSingleton(authenticationConfiguration);
 
             services.AddScoped<IFitnessServices, FitnessServices>();
 
