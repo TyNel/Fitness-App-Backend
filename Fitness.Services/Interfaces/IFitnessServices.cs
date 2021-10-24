@@ -25,7 +25,7 @@ namespace Fitness.Services.Interfaces
 
         Task<User> Login(UserLogin user);
 
-        Task<int> AddExercise(ExerciseAddRequest exercise);
+        Task<CompletedExercise> AddExercise(ExerciseAddRequest exercise);
 
         Task<UpdateUser> UpdateUser(UpdateUser user);
 

@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="C:\Users\Tyler\.nuget\packages\nlog.config\4.7.11\contentFiles\any\any\NLog.config" />
+    <None Remove="C:\Users\Tyler\.nuget\packages\nlog.schema\4.7.11\contentFiles\any\any\NLog.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Enums\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>
