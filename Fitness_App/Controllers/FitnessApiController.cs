@@ -70,9 +70,11 @@ namespace Fitness_App.Controllers
                     return Ok(await _service.GetById(id));
                 }
             }
+
             catch (Exception ex)
             { 
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -111,6 +113,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -139,6 +142,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -181,6 +185,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -254,6 +259,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -290,6 +296,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
@@ -320,6 +327,7 @@ namespace Fitness_App.Controllers
             catch (Exception ex)
             {
                 ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+                logger.Info(ex.Message);
 
                 return StatusCode(500, response);
             }
