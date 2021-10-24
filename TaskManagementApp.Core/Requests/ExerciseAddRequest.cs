@@ -26,11 +26,14 @@ namespace Fitness.Models.Requests
         [Required]
         [Range(0, Int32.MaxValue)]
         public int Status_Id { get; set; }
-        [StringLength(50, MinimumLength = 1)]
+        
+        [Required]
         public string UserNotes { get; set; }
-       
+
+        [Required]
         public string DateAdded { get; set; }
-       
+
+        [Required]
         public string DateModified { get; set; }
 
     }

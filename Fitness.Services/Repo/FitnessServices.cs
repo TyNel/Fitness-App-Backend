@@ -156,10 +156,13 @@ namespace Fitness.Services.Repo
         }
 
 
-        public async Task<int> AddExercise(ExerciseAddRequest exercise)
+        public async Task<CompletedExercise> AddExercise(ExerciseAddRequest exercise)
         {
             using (IDbConnection dbConnection = Connection)
             {
+
+                complete_ex = new CompletedExercise();
+
                 var proc = "dbo.Fitness_Exercise_Insert_Single";
 
                 var parameter = new DynamicParameters();
@@ -176,11 +179,11 @@ namespace Fitness.Services.Repo
                 parameter.Add("dateModified", exercise.DateModified);
 
 
-                var result = await Connection.QueryAsync<int>(proc, parameter, commandType: CommandType.StoredProcedure);
+                var response = await Connection.QueryAsync<CompletedExercise>(proc, parameter, commandType: CommandType.StoredProcedure);
 
-                int newExercises = parameter.Get<int>("id");
+                complete_ex = response.FirstOrDefault();
 
-                return newExercises;
+                return complete_ex;
 
             }
 

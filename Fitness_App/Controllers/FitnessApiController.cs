@@ -55,20 +55,28 @@ namespace Fitness_App.Controllers
 
         [HttpGet("user/{id}")]
     
-        public async Task<IActionResult> GetUserById([FromBody] int id)
+        public async Task<IActionResult> GetUserById(int id)
         {
 
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequestModelState();
+                if (await _service.GetById(id) == null)
+                {
+                    return NotFound("User Not Found");
+                }
+                
+                else
+                {
+                    return Ok(await _service.GetById(id));
+                }
             }
+            catch (Exception ex)
+            { 
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
 
-            if (await _service.GetById(id) == null)
-            {
-                return NotFound("User Not Found");
+                return StatusCode(500, response);
             }
-
-            return Ok(await _service.GetById(id));
+           
 
         }
 
@@ -85,54 +93,100 @@ namespace Fitness_App.Controllers
    
         public async Task<IActionResult> GetExercises(int id)
         {
-            if (!ModelState.IsValid)
+
+            try
             {
-                return BadRequestModelState();
+
+                if (await _service.GetExercises(id) == null)
+                {
+                    return NotFound("Exercise Not Found");
+                }
+                else
+                {
+                    return Ok(await _service.GetExercises(id));
+                }
+
             }
 
-            if (await _service.GetExercises(id) == null)
+            catch (Exception ex)
             {
-                return NotFound("Exercise Not Found");
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+
+                return StatusCode(500, response);
             }
 
-            return Ok(await _service.GetExercises(id));
+
+
+
 
         }
 
         [HttpGet("{id}/{userDate}")]
         public async Task<IActionResult> GetExerciseByDate(int id, DateTime userDate)
         {
-            if(await _service.GetExerciseByDate(id, userDate) == null)
+            try
             {
-                return NotFound("Exercise not found");
+                if (await _service.GetExerciseByDate(id, userDate) == null)
+                {
+                    return NotFound("Exercise not found");
+                }
+                else
+                {
+                    return Ok(await _service.GetExerciseByDate(id, userDate));
+                }
             }
-            return Ok(await _service.GetExerciseByDate(id, userDate));
+
+            catch (Exception ex)
+            {
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+
+                return StatusCode(500, response);
+            }
+
+
 
         }
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] UserAddRequest user)
         {
-            if (!ModelState.IsValid)
+
+            try
             {
-                return BadRequestModelState();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequestModelState();
+                }
+
+                if (user.Password != user.ConfirmPassword)
+
+                {
+                    return BadRequest(new ErrorResponse("Password does not match confirm password."));
+                }
+
+                User existingEmail = await _service.GetByEmail(user.Email);
+
+                if (existingEmail != null)
+                {
+                    return Conflict(new ErrorResponse("Email already exists"));
+                }
+                else
+                {
+                    return Ok(await _service.AddUser(user));
+
+                }
             }
 
-            if (user.Password != user.ConfirmPassword)
-
+         
+            catch (Exception ex)
             {
-                return BadRequest(new ErrorResponse("Password does not match confirm password."));
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+
+                return StatusCode(500, response);
             }
-
-            User existingEmail = await _service.GetByEmail(user.Email);
-
-            if (existingEmail != null)
-            {
-                return Conflict(new ErrorResponse("Email already exists"));
-            }
-
-            return Ok(await _service.AddUser(user));
         }
+       
+        
 
         [AllowAnonymous]
         [HttpPost("login")]
@@ -151,6 +205,11 @@ namespace Fitness_App.Controllers
             }
 
             var LoginUser = await _service.Login(loginrequest);
+
+            if(LoginUser == null)
+            {
+                return BadRequestModelState();
+            }
 
             if (CommonMethods.Decrypt(LoginUser.Password) != loginrequest.Password)
             {
@@ -175,12 +234,28 @@ namespace Fitness_App.Controllers
         [HttpPost("addExercise")]
         public async Task<IActionResult> AddExercise([FromBody]ExerciseAddRequest exercise)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequestModelState();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequestModelState();
+                }
+                else
+                {
+                    return Ok(await _service.AddExercise(exercise));
+                }
+                
             }
 
-            return Ok(await _service.AddExercise(exercise));
+            catch (Exception ex)
+            {
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+
+                return StatusCode(500, response);
+            }
+
+
+
         }
 
         [AllowAnonymous]
@@ -194,26 +269,59 @@ namespace Fitness_App.Controllers
         [HttpPut("UpdateExercise")]
         public async Task<IActionResult> UpdateExercise([FromBody]ExerciseUpdate exercise)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequestModelState();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequestModelState();
+                }
+
+                else
+                {
+                    return Ok(await _service.UpdateExercise(exercise));
+
+                }
             }
 
-            return Ok(await _service.UpdateExercise(exercise));
+            catch (Exception ex)
+            {
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
+
+                return StatusCode(500, response);
+            }
+
+
+
         }
 
         [AllowAnonymous]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteExercise(int id)
         {
-            if (await _service.GetExerciseById(id) == null)
+            try
             {
-                return NotFound("User not found");
+                if (await _service.GetExerciseById(id) == null)
+                {
+                    return NotFound("Exercise not found");
+                }
+
+                else
+                {
+                    await _service.DeleteExercise(id);
+
+                    return Ok("Exercise Deleted");
+                }
             }
 
-            await _service.DeleteExercise(id);
+            catch (Exception ex)
+            {
+                ErrorResponse response = new ErrorResponse($"Error: ${ex.Message}");
 
-            return Ok("Exercise Deleted");
+                return StatusCode(500, response);
+            }
+
+
+
         }
         [AllowAnonymous]
         [HttpPost("refresh")]
