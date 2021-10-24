@@ -26,7 +26,7 @@ namespace Fitness_App.Controllers
     [ApiController]
     public class FitnessApiController : ControllerBase
     {
-        private static Logger logger = LogManager.GetLogger("*");
+        private static Logger logger = LogManager.GetLogger("fitnessAppLogger");
         private readonly IConfiguration _configuration;
         private readonly AccessTokenGenerator _tokenGenerator;
         private readonly RefreshTokenGenerator _refreshTokenGenerator;
@@ -140,14 +140,18 @@ namespace Fitness_App.Controllers
         {
             if (!ModelState.IsValid)
             {
+                logger.Info("Email or password is invalid.");
                 return BadRequestModelState();
+
             }
 
             User user = await _service.GetByEmail(loginrequest.Email);
 
             if (user == null)
             {
+                logger.Info("User not found");
                 return Unauthorized();
+                
             }
 
             var LoginUser = await _service.Login(loginrequest);
