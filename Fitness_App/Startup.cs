@@ -79,10 +79,10 @@ namespace Fitness_App
             {
                 options.AddPolicy("CORSPolicy",
                     
-                      builder => builder.WithOrigins("http://localhost:3000")
+                      builder => builder.WithOrigins("http://localhost:3000", "https://peaceful-curie-f9591d.netlify.app")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
-                      .AllowCredentials() // use this for cookies
+                      .AllowCredentials() 
                     );
             });
 
@@ -105,9 +105,7 @@ namespace Fitness_App
 
             app.UseHttpsRedirection();
             app.UseCors("CORSPolicy");
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
