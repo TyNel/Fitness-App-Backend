@@ -79,7 +79,7 @@ namespace Fitness_App
             {
                 options.AddPolicy("CORSPolicy",
                     
-                      builder => builder.WithOrigins("http://localhost:3000", "https://peaceful-curie-f9591d.netlify.app")
+                      builder => builder.WithOrigins("http://localhost:3000", "https://blissful-tereshkova-a18746.netlify.app")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials() 

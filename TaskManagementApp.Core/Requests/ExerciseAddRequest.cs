@@ -27,7 +27,7 @@ namespace Fitness.Models.Requests
         [Range(0, Int32.MaxValue)]
         public int Status_Id { get; set; }
         
-        [Required]
+        
         public string UserNotes { get; set; }
 
         [Required]
