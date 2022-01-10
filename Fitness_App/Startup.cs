@@ -79,7 +79,7 @@ namespace Fitness_App
             {
                 options.AddPolicy("CORSPolicy",
                     
-                      builder => builder.WithOrigins("http://localhost:3000", "https://blissful-tereshkova-a18746.netlify.app")
+                      builder => builder.WithOrigins("http://localhost:3000", "https://ty-fitness-app.netlify.app")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials() 
@@ -96,12 +96,16 @@ namespace Fitness_App
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            
+            
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fitness_App v1"));
-            }
+                app.UseSwaggerUI(c =>
+                {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fitness_App v1");
+                c.RoutePrefix = string.Empty;
+                });
+
 
             app.UseHttpsRedirection();
             app.UseCors("CORSPolicy");
